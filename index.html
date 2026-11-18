@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Necklace fronts</title>
+<link rel="stylesheet" href="vendor/katex/katex.min.css">
+<link rel="stylesheet" href="style.css">
+<script src="vendor/katex/katex.min.js"></script>
+<script src="vendor/marked/lib/marked.umd.js"></script>
+</head>
+<body data-mode="public">
+<div id="frame">
+  <div id="slide">
+    <section id="stage-wrap">
+      <div id="stage"></div>
+      <div id="hint" hidden></div>
+      <div id="controls" hidden></div>
+    </section>
+    <section id="text"></section>
+    <footer id="progress"></footer>
+    <div id="intro" hidden>These slides are interactive. <span class="kb">Press <kbd>→</kbd> or click</span><span class="tch">Tap</span> <b>›</b> at the bottom right to begin.<br>
+      On many slides you can drag the shaded lines, and the figure follows. <b>?</b> shows how.</div>
+  </div>
+</div>
+<aside id="script" hidden></aside>
+<div id="tip" hidden></div>
+<div id="rotate">Turn your device sideways for a larger view of the slides.</div>
+<aside id="help" hidden>
+<div class="help-public">
+  <div class="help-head"><b>How to use these slides</b><button type="button" data-act="help" title="Close (? or Esc)">×</button></div>
+  <div class="cols">
+    <section><h4>Move through the talk</h4>
+      <p><kbd>→</kbd> <kbd>Space</kbd> or <b>›</b> next; some slides reveal in steps</p>
+      <p><kbd>←</kbd> or <b>‹</b> back · <kbd>Home</kbd> <kbd>End</kbd> first, last slide · <kbd>g</kbd> go to a slide number</p>
+      <p><kbd>r</kbd> reset the slide and replay its animation · <kbd>f</kbd> full screen</p>
+    </section>
+    <section><h4>Change the figures</h4>
+      <p>What can be dragged is shaded when a slide opens and while the pointer is over the figure. Over a shaded line the pointer becomes ↔ or ↕ and names the quantity.</p>
+      <p>On a touch screen, drag a shaded line with a finger and tap ‹ › to move.</p>
+      <p>Where the pointer becomes a hand, click: words, dots, the letters P and Q.</p>
+      <p>The line under each figure lists what you can change there and the keys that do the same. Hold <kbd>Shift</kbd> for larger steps.</p>
+    </section>
+    <section><h4>Panels</h4>
+      <p><kbd>n</kbd> or <b>Notes</b>: the speaker's notes for each slide; <kbd>Esc</kbd> closes them</p>
+      <p><kbd>c</kbd> or <b>Sliders</b>: a slider for each quantity on the slide</p>
+      <p><kbd>?</kbd>: this help</p>
+    </section>
+  </div>
+  <p class="this-slide"></p>
+</div>
+<div class="help-talk">
+  <b>Steps</b>: → Space PageDown next (first the builds of a step) · ← PageUp Backspace previous · Home End · g go to step<br>
+  <b>Stage</b>: , . phase s · − = threshold a · [ ] number j of spargels · p q send s to ρ<sub>P</sub>, ρ<sub>Q</sub> ·
+  ↑ ↓ selected word (or ρ) · 1 2 3 crossing (step 16) · step 14: , . ρ₋ or σ, [ ] ρ₊ · Shift for larger moves · r reset and replay this step<br>
+  <b>Mouse</b>: drag the line or mark of any adjustable quantity (u = a in any panel, the red lines of s, ρ, ρ<sub>j</sub>, σ) · click a word or a letter<br>
+  <b>Other</b>: s script (off / full / bullets) · c sliders · f fullscreen · ? this help
+</div>
+</aside>
+<script type="module" src="app.js"></script>
+</body>
+</html>

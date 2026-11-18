@@ -1,0 +1,23 @@
+# Step order. One folder name per line under content/steps/.
+# Lines after "backup" are backup slides: reachable, outside the progress count.
+01-title
+02-experiments
+03-junction
+04-answers
+06-saddle
+07-reduction
+08-two-energies
+09-return-map
+10-manifolds
+11-mckean
+12-crossing
+14-lengths
+15-orientation
+15b-stability
+16-prescribed
+17-alternating
+19-spargels
+20-answers
+21-open
+backup
+round2/23-proof-equations

@@ -1,0 +1,186 @@
+/* Necklace talk.
+   The slide is a 16:9 frame scaled to the window; nothing is drawn around it.
+   Each step chooses a layout (title, split, stage, statement) in its slide.md. */
+/* Slide text: Fira Sans, vendored from nixpkgs (vendor/fonts, see flake.nix).
+   Stage labels use KaTeX_Main (upright and italic), so that they match the mathematics on the slide. */
+@font-face { font-family: "Fira Sans"; src: url(vendor/fonts/FiraSans-Book.ttf); font-weight: 400; font-style: normal; }
+@font-face { font-family: "Fira Sans"; src: url(vendor/fonts/FiraSans-BookItalic.ttf); font-weight: 400; font-style: italic; }
+@font-face { font-family: "Fira Sans"; src: url(vendor/fonts/FiraSans-SemiBold.ttf); font-weight: 600; font-style: normal; }
+@font-face { font-family: "Fira Sans"; src: url(vendor/fonts/FiraSans-SemiBoldItalic.ttf); font-weight: 600; font-style: italic; }
+:root {
+  --bg: #ffffff;
+  --fg: #151515;
+  --muted: #5a5a5a;
+  --u: min(1vw, 1.778vh);         /* 1/100 of the frame width */
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); }
+body { font-family: "Fira Sans", "Helvetica Neue", Arial, sans-serif; overflow: hidden; }
+
+#frame { position: absolute; inset: 0; display: grid; place-items: center; }
+#slide {
+  width: calc(100 * var(--u)); height: calc(56.25 * var(--u));
+  position: relative; display: grid; overflow: hidden;
+  padding-bottom: calc(3 * var(--u));
+}
+/* Progress: section segments and step number at the foot of every slide but the title */
+#progress { position: absolute; left: calc(2 * var(--u)); right: calc(2 * var(--u)); bottom: calc(0.8 * var(--u));
+  color: #8a8a8a; font-size: calc(1.15 * var(--u)); }
+#progress .bar { display: flex; gap: calc(0.4 * var(--u)); height: calc(0.25 * var(--u)); margin-bottom: calc(0.35 * var(--u)); }
+#progress .seg { background: #e4e4e4; position: relative; }
+#progress .seg i { position: absolute; inset: 0 auto 0 0; background: #9a9a9a; }
+#progress .seg.now i { background: #3d5a80; }
+#progress .where { display: flex; justify-content: space-between; }
+#progress .katex { font-size: 1em; }
+body.layout-title #progress { display: none; }
+#stage-wrap { position: relative; min-height: 0; min-width: 0; display: grid; grid-template-rows: 1fr auto; }
+#stage { min-height: 0; }
+#stage svg { width: 100%; height: 100%; display: block; }
+#stage svg text { font-family: "KaTeX_Main", "Latin Modern Roman", serif; }
+
+#text { min-width: 0; align-self: center; font-size: calc(2.0 * var(--u)); line-height: 1.4; }
+#text p { margin: 0 0 calc(1.2 * var(--u)); }
+#text h1 { font-size: calc(4.0 * var(--u)); font-weight: 600; margin: 0; line-height: 1.15; }
+#text h3 { font-size: calc(2.8 * var(--u)); font-weight: 600; margin: 0 0 calc(1.5 * var(--u)); }
+#text ul { margin: 0; padding-left: calc(2.4 * var(--u)); }
+#text li { margin-bottom: calc(0.8 * var(--u)); }
+#text strong { font-weight: 650; }
+#text em { color: var(--muted); }
+#text .katex-display { margin: calc(0.8 * var(--u)) 0; }
+#text .katex { font-size: 1.05em; }
+
+/* Layouts */
+body.layout-title #slide { grid-template-columns: 1fr; }
+body.layout-title #stage-wrap { display: none; }
+body.layout-title #text { justify-self: center; text-align: center; font-size: calc(2.2 * var(--u)); color: var(--muted); }
+body.layout-title #text h1 { color: var(--fg); }
+body.layout-title #text h1 + p { margin-top: calc(4 * var(--u)); }
+
+body.layout-split #slide { grid-template-columns: 60% 40%; }
+body.layout-split #text { padding: 0 calc(4 * var(--u)) 0 calc(1.5 * var(--u)); }
+
+body.layout-stage #slide { grid-template-columns: 76% 24%; }
+body.layout-stage #text { padding: 0 calc(2.5 * var(--u)) 0 calc(0.5 * var(--u)); font-size: calc(1.8 * var(--u)); color: var(--muted); }
+body.layout-stage #text h3 { color: var(--fg); font-size: calc(2.5 * var(--u)); }
+
+body.layout-statement #slide { grid-template-columns: 1fr; }
+body.layout-statement #stage-wrap { display: none; }
+body.layout-statement #text { justify-self: center; max-width: calc(72 * var(--u)); font-size: calc(2.3 * var(--u)); }
+
+/* Live sliders (off unless "c") */
+#controls { font-size: calc(1.1 * var(--u)); padding: calc(0.3 * var(--u)) calc(1.2 * var(--u)); display: flex; gap: calc(2 * var(--u)); flex-wrap: wrap; }
+#controls[hidden] { display: none; }
+body.public #controls { font-size: max(11px, calc(1.1 * var(--u))); }
+#controls label { display: flex; align-items: center; gap: calc(0.5 * var(--u)); }
+/* fixed label width: a label that changes width while a slider is dragged moves the slider under the pointer and ends the drag */
+#controls label span { display: inline-block; min-width: 6.2em; font-variant-numeric: tabular-nums; }
+#controls input[type=range] { width: calc(14 * var(--u)); }
+
+/* Development: script beside the slide ("s") */
+body.script-on { --u: min(0.62vw, 1.778vh); }
+body.script-on #frame { right: 38vw; }
+#script { position: absolute; top: 0; right: 0; bottom: 0; width: 38vw; overflow-y: auto;
+  padding: 1.2em 1.6em; background: #f7f6f2; border-left: 1px solid #ddd; font-size: 18px; line-height: 1.5; }
+#script .meta { color: var(--muted); font-size: 13px; margin-bottom: 0.8em; }
+#script .mode { font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; font-size: 12px; color: #8a5a00; }
+#script h4 { margin: 1.2em 0 0.4em; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+#script .layers div { font-size: 13px; }
+#script .tag { font-size: 11px; padding: 0 0.35em; border-radius: 0.25em; color: #fff; }
+#script .tag.exact { background: #1b6e3a; }
+#script .tag.computed { background: #1f4fa0; }
+#script .tag.schematic { background: #8a5a00; }
+#help { position: absolute; left: 5%; right: 5%; bottom: 4%; background: #fffbe8; border: 1px solid #c9b45a;
+  padding: 0.8em 1.2em; font-size: 15px; line-height: 1.6; }
+
+/* Stage text sizes (SVG units; the stage viewBox is 1000 wide) */
+svg .axis-label { font-size: 26px; font-style: italic; fill: #444; }
+svg .tick { font-size: 19px; fill: #666; }
+svg .lbl { font-size: 24px; }
+svg .lbl-i { font-size: 25px; font-style: italic; }
+svg .small { font-size: 20px; }
+svg .direct { font-size: 25px; font-style: italic; }
+
+/* labels stay readable where curves pass under them */
+#stage svg text.lbl, #stage svg text.lbl-i, #stage svg text.direct, #stage svg text.small { paint-order: stroke; stroke: #fff; stroke-width: 5px; stroke-linejoin: round; }
+
+/* Round 5: drawn objects that carry an adjustable quantity can be dragged; show where on hover. */
+#stage svg line.handle:hover { stroke: rgba(204, 0, 0, 0.12); }
+
+/* ---------- Published version (body.public, set by tools/publish.sh; ?public previews it) ----------
+   Navigation buttons in the footer, a line under each interactive figure saying what can be changed,
+   a glow on the drag handles when a slide opens, the name and value of a handle beside the pointer,
+   notes = the bullets, and a short help. The talk version is unchanged. */
+body:not(.public) .help-public, body.public .help-talk { display: none; }
+body.public #slide { padding-bottom: calc(4.2 * var(--u)); }
+body.public.layout-title #progress { display: block; }
+body.public.layout-title #progress .bar { visibility: hidden; }
+#stage-wrap { grid-template-rows: 1fr auto auto; }
+kbd { font-family: inherit; font-size: 0.82em; color: #333; background: #fafafa; border: 1px solid #c4c4c4; border-bottom-width: 2px;
+  border-radius: 0.3em; padding: 0 0.35em; margin: 0 0.06em; white-space: nowrap; }
+#hint { font-size: max(11px, calc(1.2 * var(--u))); color: #555; line-height: 1.5; padding: calc(0.3 * var(--u)) calc(1.2 * var(--u)) 0; }
+#hint[hidden] { display: none; }
+#hint b { color: #3d5a80; font-weight: 600; }
+#hint .or { color: #888; }
+#hint .sep, #help .sep { color: #aaa; margin: 0 0.6em; }
+#hint .sep.wide, #help .sep.wide { margin: 0 1em; }
+#hint .or, #help .or { color: #888; }
+#help .this-slide b { color: #3d5a80; }
+#hint i, #tip i, #help i, #controls i { font-family: "KaTeX_Math", "Times New Roman", serif; font-style: italic; }
+#progress .nav { display: inline-flex; align-items: center; gap: calc(0.45 * var(--u)); }
+#progress .count { min-width: 3.6em; text-align: center; }
+#progress .sep { width: calc(0.8 * var(--u)); }
+#progress button { font: inherit; color: #555; background: #fff; border: 1px solid #cfcfcf; border-radius: calc(0.35 * var(--u));
+  padding: calc(0.1 * var(--u)) calc(0.7 * var(--u)); line-height: 1.35; cursor: pointer; }
+#progress button[data-act=prev], #progress button[data-act=next] { font-size: 1.35em; line-height: 1; padding: calc(0.1 * var(--u)) calc(0.8 * var(--u)); }
+#progress button[data-act=next] { color: #3d5a80; border-color: #3d5a80; }
+#progress button:hover:not(:disabled) { background: #eef2f8; border-color: #3d5a80; color: #3d5a80; }
+#progress button:disabled { color: #ccc; border-color: #e6e6e6; cursor: default; }
+#progress button.slot { visibility: hidden; }
+body.public #progress { font-size: max(10px, calc(1.15 * var(--u))); }
+#progress button.on { background: #3d5a80; border-color: #3d5a80; color: #fff; }
+#intro { position: absolute; left: 0; right: 0; bottom: calc(7 * var(--u)); text-align: center; color: #555;
+  font-size: max(12px, calc(1.45 * var(--u))); line-height: 1.7; }
+/* touch screens: buttons large enough to tap; in portrait, a note to turn the device */
+@media (pointer: coarse) {
+  body.public #progress button { min-width: 40px; min-height: 36px; }
+  body.public #slide { padding-bottom: calc(1.4 * var(--u) + 44px); } /* room for the taller footer */
+}
+#intro .tch { display: none; }
+@media (hover: none) { #intro .kb { display: none; } #intro .tch { display: inline; } }
+#rotate { display: none; }
+@media (pointer: coarse) and (orientation: portrait) {
+  body.public #rotate { display: block; position: fixed; top: 0; left: 0; right: 0; z-index: 35; padding: 10px 16px;
+    background: #eef2f8; color: #3d5a80; font-size: 15px; text-align: center; border-bottom: 1px solid #c9d3e0; }
+}
+#intro[hidden] { display: none; }
+@media (pointer: coarse) and (orientation: portrait) { body.public #intro, body.public #hint { display: none; } }
+body.public #stage svg { touch-action: none; }
+/* What can be dragged is shaded in the interface colour (red, green, purple, blue, orange belong to the mathematics):
+   one pulse when a slide opens; faintly while the pointer is over the figure or its hint (always, on touch screens);
+   more strongly over the hint line or the handle itself. */
+body.public #stage-wrap:hover svg line.handle { stroke: rgba(61, 90, 128, 0.10); }
+@media (hover: none) { body.public #stage svg line.handle { stroke: rgba(61, 90, 128, 0.10); } }
+body.public #stage-wrap:has(#hint:hover) svg line.handle { stroke: rgba(61, 90, 128, 0.26); }
+body.public #stage svg line.handle:hover { stroke: rgba(61, 90, 128, 0.22); }
+body.public #stage.glow svg line.handle { animation: handle-glow 1.2s ease-in-out 1; }
+@keyframes handle-glow { 0%, 100% { stroke: rgba(61, 90, 128, 0); } 45% { stroke: rgba(61, 90, 128, 0.30); } }
+body.public #stage svg .clickable:hover { opacity: 0.65; }
+#tip { position: fixed; z-index: 40; pointer-events: none; white-space: nowrap; background: rgba(28, 28, 28, 0.9); color: #fff;
+  font-size: 15px; padding: 3px 9px; border-radius: 4px; }
+#tip[hidden] { display: none; }
+#tip .how { color: #c8c8c8; margin-left: 0.3em; font-size: 0.9em; }
+body.public #help { left: 50%; top: 50%; right: auto; bottom: auto; transform: translate(-50%, -50%); z-index: 30;
+  width: min(1100px, 92vw); max-height: 90vh; overflow-y: auto; background: #fff; border: 1px solid #ccc; border-radius: 8px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18); padding: 16px 24px 12px; font-size: 15px; line-height: 1.5; }
+body.public #help[hidden] { display: none; }
+.help-head, .notes-head { display: flex; justify-content: space-between; align-items: center; }
+.help-head { font-size: 18px; margin-bottom: 6px; }
+.help-head button, .notes-head button { font-size: 24px; line-height: 1; border: none; background: none; color: #777; cursor: pointer; padding: 0 4px; }
+.help-head button:hover, .notes-head button:hover { color: #000; }
+#help .cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+#help h4 { margin: 8px 0 4px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #3d5a80; }
+#help .cols p { margin: 4px 0 8px; }
+#help .this-slide { border-top: 1px solid #eee; margin: 6px 0 0; padding-top: 10px; color: #444; }
+#help .this-slide .keys { margin-left: 0.6em; color: #777; }
+@media (max-width: 800px) { #help .cols { grid-template-columns: 1fr; gap: 0; } }
+.notes-head { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #3d5a80; margin-bottom: 0.6em; }
