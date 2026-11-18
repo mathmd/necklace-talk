@@ -146,7 +146,7 @@ body.public #progress { font-size: max(10px, calc(1.15 * var(--u))); }
   body.public #slide { padding-bottom: calc(1.4 * var(--u) + 44px); } /* room for the taller footer */
 }
 #intro .tch { display: none; }
-@media (hover: none) { #intro .kb { display: none; } #intro .tch { display: inline; } }
+@media (pointer: coarse) { #intro .kb { display: none; } #intro .tch { display: inline; } }
 #rotate { display: none; }
 @media (pointer: coarse) and (orientation: portrait) {
   body.public #rotate { display: block; position: fixed; top: 0; left: 0; right: 0; z-index: 35; padding: 10px 16px;

@@ -198,7 +198,7 @@ function hintHTML() {
   const allowed = new Set(String(s.controls || "").split(",").map((t) => t.trim()).filter(Boolean));
   const handles = new Map();
   for (const h of st.querySelectorAll("svg line.handle[data-name]")) if (!handles.has(h.dataset.name)) handles.set(h.dataset.name, h.dataset.q || "");
-  const touch = matchMedia("(hover: none)").matches; // no keyboard: no key alternatives, and Tap for Click
+  const touch = matchMedia("(pointer: coarse)").matches; // primary input is touch: no key alternatives, and Tap for Click
   const or = (...ks) => (touch ? "" : ` <span class="or">or</span> ${kbd(...ks)}`);
   const groups = [], items = [];
   let crossings = [];
